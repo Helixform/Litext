@@ -244,7 +244,7 @@ NSString *const LTXReplacementText = @"\uFFFC";
     if ([self _isHighlightRegion:activeHighlightRegion containsPoint:touchLocation]) {
         __auto_type tapHandler = self.tapHandler;
         if (tapHandler) {
-            tapHandler(activeHighlightRegion);
+            tapHandler(activeHighlightRegion, touchLocation);
         }
     }
 

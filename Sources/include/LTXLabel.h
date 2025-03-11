@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const LTXReplacementText;
 
-typedef void (^LTXLabelTapHandler)(LTXHighlightRegion *_Nullable highlightRegion);
+typedef void(^LTXLabelTapHandler)(LTXHighlightRegion * _Nullable highlightRegion, CGPoint touchLocation);
 
 /// A view that displays the multiline rich text.
 @interface LTXLabel : LTXPlatformView
