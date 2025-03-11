@@ -93,8 +93,24 @@ static _Nullable CTLineRef _createTruncatedLine(CTLineRef lastLine, NSAttributed
 }
 
 - (void)dealloc {
-    CFRelease(_framesetter);
-    _framesetter = nil;
+    if (_framesetter) {
+        CFRelease(_framesetter);
+        _framesetter = NULL;
+    }
+    
+    if (_ctFrame) {
+        CFRelease(_ctFrame);
+        _ctFrame = NULL;
+    }
+    
+    [_highlightRegions removeAllObjects];
+    _highlightRegions = nil;
+    
+    [_lineDrawingActions removeAllObjects];
+    _lineDrawingActions = nil;
+    
+    _lines = nil;
+    _attributedString = nil;
 }
 
 - (NSArray<LTXHighlightRegion *> *)highlightRegions {
@@ -174,6 +190,7 @@ static _Nullable CTLineRef _createTruncatedLine(CTLineRef lastLine, NSAttributed
     // Handle line truncation.
     CFRange visibleRange = CTFrameGetVisibleStringRange(_ctFrame);
     if (visibleRange.length == _attributedString.length || _lines.count == 0) {
+        CGPathRelease(containerPath);
         return;
     }
 
@@ -185,6 +202,7 @@ static _Nullable CTLineRef _createTruncatedLine(CTLineRef lastLine, NSAttributed
         lines[lines.count - 1] = (__bridge_transfer id) truncatedLine;
         _lines = [lines copy];
     }
+    CGPathRelease(containerPath);
 }
 
 - (void)_extractHighlightRegionsWithContext:(CGContextRef)context {
