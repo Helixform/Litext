@@ -25,6 +25,9 @@ typedef void (^LTXLabelTapHandler)(LTXHighlightRegion *_Nullable highlightRegion
 /// A block that is invoked when the user taps an interactive element.
 @property (nonatomic, copy) LTXLabelTapHandler tapHandler;
 
+/// A value indicating whether the label is waiting to perform operations on highlighted items.
+@property (nonatomic, readonly) BOOL isTouchSequenceActive;
+
 @end
 
 NS_ASSUME_NONNULL_END

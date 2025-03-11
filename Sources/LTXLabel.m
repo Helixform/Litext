@@ -42,11 +42,13 @@ NSString *const LTXReplacementText = @"\uFFFC";
     NSMutableSet<LTXPlatformView *> *_attachmentViews;
     NSArray<LTXHighlightRegion *> *_highlightRegions;
     LTXHighlightRegion *_activeHighlightRegion;
+    CGPoint _initialTouchLocation;
     CGSize _lastContainerSize;
     struct {
         BOOL layoutIsDirty : 1;
         BOOL needsUpdateHighlightRegions : 1;
     } _flags;
+    BOOL _isTouchSequenceActive;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -90,6 +92,10 @@ NSString *const LTXReplacementText = @"\uFFFC";
 - (void)setPreferredMaxLayoutWidth:(CGFloat)preferredMaxLayoutWidth {
     _preferredMaxLayoutWidth = preferredMaxLayoutWidth;
     [self _invalidateTextLayout];
+}
+
+- (BOOL)isTouchSequenceActive {
+    return _isTouchSequenceActive;
 }
 
 #pragma mark - Layout & Auto Layout Supports
@@ -200,15 +206,34 @@ NSString *const LTXReplacementText = @"\uFFFC";
     UITouch *firstTouch = [touches allObjects].firstObject;
     CGPoint touchLocation = [firstTouch locationInView:self];
 
+    _initialTouchLocation = touchLocation;
+    
     __auto_type hitHighlightRegion = [self _highlightRegionAtPoint:touchLocation];
     if (hitHighlightRegion) {
         [self _addActiveHighlightRegion:hitHighlightRegion];
+    }
+    _isTouchSequenceActive = YES;
+}
+    
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    if (!_activeHighlightRegion) { return; }
+    
+    UITouch *firstTouch = [touches allObjects].firstObject;
+    CGPoint currentLocation = [firstTouch locationInView:self];
+    
+    CGFloat distance = hypot(currentLocation.x - _initialTouchLocation.x, 
+                           currentLocation.y - _initialTouchLocation.y);
+    
+    if (distance > 8.0) { // touch really moved
+        [self _removeActiveHighlightRegion];
+        _isTouchSequenceActive = NO;
     }
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     __auto_type activeHighlightRegion = _activeHighlightRegion;
     if (!activeHighlightRegion) {
+        _isTouchSequenceActive = NO;
         return;
     }
 
@@ -224,6 +249,7 @@ NSString *const LTXReplacementText = @"\uFFFC";
     }
 
     [self _removeActiveHighlightRegion];
+    _isTouchSequenceActive = NO;
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
